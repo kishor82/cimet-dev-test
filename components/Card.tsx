@@ -4,6 +4,8 @@ import { getCleanText } from "../lib";
 import Link from "next/link";
 import { FaInfoCircle, FaLightbulb, FaSun } from "react-icons/fa";
 
+import DOMPurify from "dompurify";
+
 const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -202,6 +204,7 @@ const StyledLink = styled.a`
 `;
 
 export interface IData {
+  id: string;
   title: string;
   description: string;
   features;
@@ -291,7 +294,7 @@ export const Card = ({
                   {points
                     .filter((item) => !!item)
                     .map((point, index) => (
-                      <StyledPoint key={index}>
+                      <StyledPoint key={`points-${index}`}>
                         &#10004; {getCleanText(point)}
                       </StyledPoint>
                     ))}
@@ -316,7 +319,11 @@ export const Card = ({
             </StyledCol>
           </StyledRow>
           <StyledRow>
-            <div dangerouslySetInnerHTML={{ __html: dmo_content.Ausgrid }} />
+            <div
+              dangerouslySetInnerHTML={{
+                __html: dmo_content.Ausgrid
+              }}
+            />
           </StyledRow>
           <StyledThirdRow>
             <Styled90Col>
