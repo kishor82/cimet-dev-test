@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, IData } from "../components/Card";
+import { Loader } from "../components/Loader";
 import DOMPurify from "dompurify";
 
 type Props = {
@@ -24,6 +25,7 @@ const Listing = () => {
   const [data, setData] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -44,41 +46,46 @@ const Listing = () => {
       const cachedToken = localStorage.getItem("token");
       if (cachedToken) {
         const { data } = JSON.parse(cachedToken);
-
-        const response = await fetch("/api/get_plan_list", {
-          headers: {
-            Authorization: data.token
-          }
-        });
-        if (response.ok) {
-          const serverData = await response.json();
-          if (serverData.status) {
-            const sanitizeData = serverData.data.electricity.map(
-              (data, index) => {
-                return {
-                  ...data,
-                  dmo_content: {
-                    ...data.dmo_content,
-                    Ausgrid: DOMPurify.sanitize(data.dmo_content.Ausgrid)
-                  },
-                  view_benefit: DOMPurify.sanitize(data.view_benefit),
-                  view_bonus: DOMPurify.sanitize(data.view_bonus),
-                  view_contract: DOMPurify.sanitize(data.view_contract),
-                  view_exit_fee: DOMPurify.sanitize(data.view_exit_fee)
-                };
+        try {
+          setIsLoading(true);
+          const response = await fetch("/api/get_plan_list", {
+            headers: {
+              Authorization: data.token
+            }
+          });
+          if (response.ok) {
+            const serverData = await response.json();
+            if (serverData.status) {
+              const sanitizeData = serverData.data.electricity.map(
+                (data, index) => {
+                  return {
+                    ...data,
+                    dmo_content: {
+                      ...data.dmo_content,
+                      Ausgrid: DOMPurify.sanitize(data.dmo_content.Ausgrid)
+                    },
+                    view_benefit: DOMPurify.sanitize(data.view_benefit),
+                    view_bonus: DOMPurify.sanitize(data.view_bonus),
+                    view_contract: DOMPurify.sanitize(data.view_contract),
+                    view_exit_fee: DOMPurify.sanitize(data.view_exit_fee)
+                  };
+                }
+              );
+              setData(sanitizeData);
+              setIsLoading(false);
+            } else {
+              console.log({ serverData });
+              if (serverData.message === "Your token has been expired.") {
+                await getToken();
+                setRetryCount((prev) => {
+                  return prev + 1;
+                });
+                setRefresh(!refresh);
               }
-            );
-            setData(sanitizeData);
-          } else {
-            console.log({ serverData });
-            if (serverData.message === "Your token has been expired.") {
-              await getToken();
-              setRetryCount((prev) => {
-                return prev + 1;
-              });
-              setRefresh(!refresh);
             }
           }
+        } catch (e) {
+          setIsLoading(false);
         }
       }
     })();
@@ -86,6 +93,7 @@ const Listing = () => {
 
   return (
     <div>
+      {isLoading && <Loader />}
       {data
         ? data.map((data, index) => <Card key={data.id} data={data} />)
         : "Failed to fetch data"}
