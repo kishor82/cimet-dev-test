@@ -2,34 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { getCleanText } from "../lib";
 import Link from "next/link";
-import { FaInfoCircle, FaLightbulb, FaSun } from "react-icons/fa";
-
-export interface IData {
-  id: string;
-  title: string;
-  description: string;
-  features;
-  planName: string;
-  provider_image: string;
-  provider_name: string;
-  dmo_content: {
-    Ausgrid: string;
-  };
-  dmo_percentage: {
-    Ausgrid: string;
-  };
-  plan_name_below_data: string;
-  why_us: string;
-  energy_type: string;
-  solar_compatible: string;
-  view_discount: string;
-  view_benefit: string;
-  view_bonus: string;
-  view_contract: string;
-  view_exit_fee: string;
-  expected_bill_amount: number;
-  expected_monthly_bill_amount: number;
-}
+import { FaInfoCircle, FaSun } from "react-icons/fa";
+import { ElectricityPlan } from "../lib/types";
 
 export const Card = ({
   data: {
@@ -48,7 +22,7 @@ export const Card = ({
     expected_monthly_bill_amount
   }
 }: {
-  data: IData;
+  data: ElectricityPlan;
 }) => {
   const points = [view_benefit, view_bonus, view_contract, view_exit_fee];
   return (
@@ -56,10 +30,7 @@ export const Card = ({
       <CardContainer>
         <TagContainer>
           {energy_type === "electricity" && (
-            <LegendTag energyType={energy_type}>
-              <FaLightbulb />
-              &nbsp; Electricity
-            </LegendTag>
+            <LegendTag>&nbsp; Electricity</LegendTag>
           )}
 
           {solar_compatible == "yes" && (
